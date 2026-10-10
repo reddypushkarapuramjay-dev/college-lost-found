@@ -1,0 +1,426 @@
+<!-- 
+  College Lost & Found Management System
+  File: index.html
+  Purpose: The main responsive homepage structure with Lost & Found reporting modals and Possible Matches section.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Lost &amp; Found Portal</title>
+  
+  <!-- Google Fonts for modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <div class="logo">
+        <span class="logo-icon">🔍</span>
+        <span class="logo-text">Campus <span>Lost &amp; Found</span></span>
+      </div>
+      <nav class="nav-links">
+        <a href="#hero" class="active">Home</a>
+        <a href="#matches-section">Possible Matches</a>
+        <a href="#lost-section">Lost Items</a>
+        <a href="#found-section">Found Items</a>
+        <a href="#help">How It Works</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+      <div class="container hero-content">
+        <span class="badge hero-badge">Official Campus Recovery Portal</span>
+        <h1>Lost Something on Campus? <br><span>We'll Help You Find It.</span></h1>
+        <p class="hero-subtitle">
+          Connect with fellow students and faculty to quickly report, track, and recover misplaced belongings across all campus departments and buildings.
+        </p>
+
+        <!-- Quick Action Buttons -->
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="btn-report-lost">
+            <span class="btn-icon">📢</span> Report Lost Item
+          </button>
+          <button class="btn btn-secondary" id="btn-report-found">
+            <span class="btn-icon">📦</span> Report Found Item
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-wrapper">
+          <div class="search-box">
+            <span class="search-icon">🔎</span>
+            <input 
+              type="text" 
+              id="item-search-input" 
+              placeholder="Search items by name, category, or location (e.g. calculator, library, keys)..."
+              aria-label="Search items"
+            >
+            <button class="search-btn" id="search-btn">Search</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Possible Matches Section -->
+    <section id="matches-section" class="items-section matches-section-bg">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <div class="section-badge-wrap">
+              <span class="badge badge-match">✨ Smart Matching</span>
+            </div>
+            <h2 class="section-title">Possible Item Matches</h2>
+            <p class="section-desc">Automatically detected potential matches between reported lost and found items.</p>
+          </div>
+          <span class="count-pill match-pill" id="matches-counter">Checking Matches...</span>
+        </div>
+
+        <!-- Disclaimer Banner -->
+        <div class="matches-disclaimer">
+          <span class="disclaimer-icon">ℹ️</span>
+          <p>
+            <strong>Note:</strong> Potential matches are calculated automatically based on item keywords, categories, and locations. A suggested match <em>does not confirm ownership</em>. Physical verification is required at campus security.
+          </p>
+        </div>
+
+        <!-- Matches Cards Grid / Empty State -->
+        <div class="matches-grid" id="matches-grid">
+          <!-- Populated dynamically via script.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Recently Lost Items Section -->
+    <section id="lost-section" class="items-section">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Recently Lost Items</h2>
+            <p class="section-desc">Items reported missing by students and staff that are currently unrecovered.</p>
+          </div>
+          <span class="count-pill lost-pill" id="lost-items-counter">3 Items Active</span>
+        </div>
+
+        <div class="cards-grid" id="lost-items-grid">
+          <!-- Dynamic and default demo cards render here via script.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Recently Found Items Section -->
+    <section id="found-section" class="items-section section-alt">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Recently Found Items</h2>
+            <p class="section-desc">Items handed in by honest campus members waiting to be claimed by owners.</p>
+          </div>
+          <span class="count-pill found-pill" id="found-items-counter">3 Items Safe</span>
+        </div>
+
+        <div class="cards-grid" id="found-items-grid">
+          <!-- Dynamic and default demo cards render here via script.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works / Help Banner -->
+    <section id="help" class="help-section">
+      <div class="container">
+        <h2 class="section-title text-center">How Campus Lost &amp; Found Works</h2>
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>Report Missing Item</h3>
+            <p>Post details and last seen location as soon as you realize an item is missing.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <h3>Hand Over &amp; Log</h3>
+            <p>If you find something, log it here and deposit it with security or departmental staff.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>Verify &amp; Recover</h3>
+            <p>Owners can search the portal, verify ownership details, and safely retrieve items.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- Modal 1: Report Lost Item Modal           -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="lost-modal-overlay" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-labelledby="lost-modal-title">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <span class="modal-tag tag-lost">Lost Item Report</span>
+          <h2 id="lost-modal-title">Report a Lost Item</h2>
+        </div>
+        <button class="modal-close-icon" id="modal-lost-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <!-- Success Notification inside Modal -->
+      <div class="alert-success" id="lost-form-success" style="display: none;">
+        <span class="alert-icon">✅</span>
+        <div>
+          <strong>Report Submitted Successfully!</strong>
+          <p>Your lost item report is saved and now visible in the list below.</p>
+        </div>
+      </div>
+
+      <form id="lost-item-form" novalidate>
+        <div class="form-grid">
+          <!-- Item Name -->
+          <div class="form-group full-width">
+            <label for="lost-item-name">Item Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="lost-item-name" 
+              name="itemName" 
+              placeholder="e.g., Casio fx-991EX Calculator, Black Dell Laptop"
+            >
+            <span class="error-msg" id="error-lost-item-name">Please enter the item name.</span>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label for="lost-category">Category <span class="required">*</span></label>
+            <select id="lost-category" name="category">
+              <option value="">-- Select a Category --</option>
+              <option value="Electronics">Electronics (Laptops, Calculators, Phones)</option>
+              <option value="Books">Books &amp; Notebooks</option>
+              <option value="ID Cards">ID Cards &amp; Documents</option>
+              <option value="Bags">Bags &amp; Backpacks</option>
+              <option value="Clothing">Clothing &amp; Accessories</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="error-msg" id="error-lost-category">Please select a category.</span>
+          </div>
+
+          <!-- Date Lost -->
+          <div class="form-group">
+            <label for="lost-date">Date Lost <span class="required">*</span></label>
+            <input type="date" id="lost-date" name="dateLost">
+            <span class="error-msg" id="error-lost-date">Please pick the date when it was lost.</span>
+          </div>
+
+          <!-- Location -->
+          <div class="form-group full-width">
+            <label for="lost-location">Last Seen Location <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="lost-location" 
+              name="location" 
+              placeholder="e.g., Science Block Room 302, Library 2nd floor, Cafeteria"
+            >
+            <span class="error-msg" id="error-lost-location">Please enter the location where you lost the item.</span>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group full-width">
+            <label for="lost-description">Item Description &amp; Details</label>
+            <textarea 
+              id="lost-description" 
+              name="description" 
+              rows="3" 
+              placeholder="Provide color, brand, stickers, scratches, or unique details..."
+            ></textarea>
+          </div>
+
+          <div class="form-divider full-width">
+            <span>Contact Information (Kept Private)</span>
+          </div>
+
+          <!-- Contact Name -->
+          <div class="form-group">
+            <label for="lost-contact-name">Your Full Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="lost-contact-name" 
+              name="contactName" 
+              placeholder="e.g., Arjun Sharma"
+            >
+            <span class="error-msg" id="error-lost-contact-name">Please enter your name.</span>
+          </div>
+
+          <!-- Contact Email -->
+          <div class="form-group">
+            <label for="lost-contact-email">College Email ID <span class="required">*</span></label>
+            <input 
+              type="email" 
+              id="lost-contact-email" 
+              name="contactEmail" 
+              placeholder="e.g., arjun.cs@college.edu"
+            >
+            <span class="error-msg" id="error-lost-contact-email">Please enter a valid email address.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="modal-lost-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary-solid" id="modal-lost-submit-btn">
+            Submit Lost Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- Modal 2: Report Found Item Modal          -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="found-modal-overlay" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-labelledby="found-modal-title">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <span class="modal-tag tag-found">Found Item Report</span>
+          <h2 id="found-modal-title">Report a Found Item</h2>
+        </div>
+        <button class="modal-close-icon" id="modal-found-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <!-- Success Notification inside Modal -->
+      <div class="alert-success" id="found-form-success" style="display: none;">
+        <span class="alert-icon">✅</span>
+        <div>
+          <strong>Found Item Reported Successfully!</strong>
+          <p>Thank you for your honesty! The item is now listed in the Recently Found Items list.</p>
+        </div>
+      </div>
+
+      <form id="found-item-form" novalidate>
+        <div class="form-grid">
+          <!-- Item Name -->
+          <div class="form-group full-width">
+            <label for="found-item-name">Item Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="found-item-name" 
+              name="itemName" 
+              placeholder="e.g., Lenovo 65W Type-C Charger, Silver Key Ring"
+            >
+            <span class="error-msg" id="error-found-item-name">Please enter the found item's name.</span>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label for="found-category">Category <span class="required">*</span></label>
+            <select id="found-category" name="category">
+              <option value="">-- Select a Category --</option>
+              <option value="Electronics">Electronics (Laptops, Calculators, Phones)</option>
+              <option value="Books">Books &amp; Notebooks</option>
+              <option value="ID Cards">ID Cards &amp; Documents</option>
+              <option value="Bags">Bags &amp; Backpacks</option>
+              <option value="Clothing">Clothing &amp; Accessories</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="error-msg" id="error-found-category">Please select a category.</span>
+          </div>
+
+          <!-- Date Found -->
+          <div class="form-group">
+            <label for="found-date">Date Found <span class="required">*</span></label>
+            <input type="date" id="found-date" name="dateFound">
+            <span class="error-msg" id="error-found-date">Please pick the date when the item was found.</span>
+          </div>
+
+          <!-- Found Location -->
+          <div class="form-group full-width">
+            <label for="found-location">Found Location <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="found-location" 
+              name="foundLocation" 
+              placeholder="e.g., Computer Lab 3 (Hub #4), Sports Ground Bench, Seminar Hall"
+            >
+            <span class="error-msg" id="error-found-location">Please enter where you found the item.</span>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group full-width">
+            <label for="found-description">Found Item Description</label>
+            <textarea 
+              id="found-description" 
+              name="foundDescription" 
+              rows="2" 
+              placeholder="General description of what was found and its condition..."
+            ></textarea>
+          </div>
+
+          <!-- Identifying Marks -->
+          <div class="form-group full-width">
+            <label for="found-marks">Identifying Marks / Safekeeping Note</label>
+            <input 
+              type="text" 
+              id="found-marks" 
+              name="identifyingMarks" 
+              placeholder="e.g., Bike charm attached, small scratch on top, deposited at Lab Assistant Desk"
+            >
+          </div>
+
+          <div class="form-divider full-width">
+            <span>Finder Information (Kept Private)</span>
+          </div>
+
+          <!-- Finder's Name -->
+          <div class="form-group">
+            <label for="found-contact-name">Finder's Full Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="found-contact-name" 
+              name="finderName" 
+              placeholder="e.g., Rohan Gupta"
+            >
+            <span class="error-msg" id="error-found-contact-name">Please enter your full name.</span>
+          </div>
+
+          <!-- College Email -->
+          <div class="form-group">
+            <label for="found-contact-email">College Email ID <span class="required">*</span></label>
+            <input 
+              type="email" 
+              id="found-contact-email" 
+              name="finderEmail" 
+              placeholder="e.g., rohan.gupta@college.edu"
+            >
+            <span class="error-msg" id="error-found-contact-email">Please enter a valid email address.</span>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="modal-found-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-success-solid" id="modal-found-submit-btn">
+            Submit Found Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p>&copy; 2026 Campus Lost &amp; Found Management System. Designed for College Students &amp; Faculty.</p>
+      <p class="footer-sub">Campus Helpdesk: helpdesk@college.edu | Security Office: Ext. 404</p>
+    </div>
+  </footer>
+
+  <!-- External Script -->
+  <script src="script.js"></script>
+</body>
+</html>
