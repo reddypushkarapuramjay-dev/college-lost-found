@@ -1,0 +1,12 @@
+# Node dependencies
+node_modules/
+package-lock.json
+
+# Firebase local caches and logs
+firestore-debug.log
+ui-debug.log
+.firebase/
+
+# IDE / System files
+.DS_Store
+Thumbs.db

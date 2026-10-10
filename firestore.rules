@@ -1,0 +1,174 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Enforce that only verified college email accounts ending in @srkrec.ac.in can create reports
+    function isVerifiedCollegeUser() {
+      return isAuthenticated()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string
+        && request.auth.token.email.matches('(?i)^[^@\\s]+@srkrec[.]ac[.]in$');
+    }
+
+    // ==========================================
+    // 1. Lost Items Collection
+    // ==========================================
+    match /lost_items/{itemId} {
+      // Anyone can read active or resolved lost items in the campus public directory
+      allow read: if true;
+
+      // Only verified @srkrec.ac.in students can create lost reports with strictly defined public schema
+      // Requires exactly these 8 fields and rejects any unlisted fields:
+      // itemName, category, dateLost, location, description, status, createdAt, createdBy
+      allow create: if isVerifiedCollegeUser()
+        && request.resource.data.keys().hasAll([
+          'itemName', 'category', 'dateLost', 'location', 
+          'description', 'status', 'createdAt', 'createdBy'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'itemName', 'category', 'dateLost', 'location', 
+          'description', 'status', 'createdAt', 'createdBy'
+        ])
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.status == 'Active'
+        && request.resource.data.itemName is string 
+        && request.resource.data.itemName.size() >= 2 
+        && request.resource.data.itemName.size() <= 100
+        && request.resource.data.category is string
+        && request.resource.data.location is string
+        && request.resource.data.description is string
+        && request.resource.data.dateLost is string
+        && request.resource.data.createdAt is string;
+
+      // Only the verified original reporting student can mark their lost item as 'Returned'
+      allow update: if isVerifiedCollegeUser()
+        && resource.data.createdBy == request.auth.uid
+        && resource.data.status == 'Active'
+        && request.resource.data.status == 'Returned'
+        && request.resource.data.returnedBy == request.auth.uid
+        && request.resource.data.returnedAt is string
+        && request.resource.data.returnedAt.matches('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$')
+        // Immutable core fields cannot be altered
+        && request.resource.data.itemName == resource.data.itemName
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.dateLost == resource.data.dateLost
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'returnedAt', 'returnedBy']);
+
+      // Disallow client deletions to preserve system audit history
+      allow delete: if false;
+
+      // Secure Subcollection: Private Contact Details
+      match /private_contact/{contactDoc} {
+        // STRICT PRIVACY POLICY: Deny client reads for all documents in this subcollection.
+        allow read: if false;
+
+        // Allow creation only when:
+        // 1. User is a verified @srkrec.ac.in college account.
+        // 2. Document ID is exactly "details".
+        // 3. Exactly these 4 fields are present and no extra fields exist:
+        //    contactName, contactEmail, createdBy, createdAt.
+        // 4. Contact document's createdBy equals signed-in user's UID.
+        // 5. Parent lost report belongs to the signed-in user (verified via getAfter() across the atomic batch).
+        // 6. Types, lengths, and @srkrec.ac.in domain match the schema.
+        allow create: if contactDoc == 'details'
+          && isVerifiedCollegeUser()
+          && request.resource.data.keys().hasAll([
+            'contactName', 'contactEmail', 'createdBy', 'createdAt'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'contactName', 'contactEmail', 'createdBy', 'createdAt'
+          ])
+          && request.resource.data.createdBy == request.auth.uid
+          && getAfter(/databases/$(database)/documents/lost_items/$(itemId)).data.createdBy == request.auth.uid
+          && request.resource.data.contactName is string
+          && request.resource.data.contactName.size() >= 2
+          && request.resource.data.contactEmail is string
+          && request.resource.data.contactEmail.matches('(?i)^[^@\\s]+@srkrec[.]ac[.]in$')
+          && request.resource.data.contactEmail.lower() == request.auth.token.email.lower()
+          && request.resource.data.createdAt is string;
+
+        // Disallow client updates and deletions
+        allow update, delete: if false;
+      }
+    }
+
+    // ==========================================
+    // 2. Found Items Collection
+    // ==========================================
+    match /found_items/{itemId} {
+      // Anyone can read active found items in the campus public directory
+      allow read: if true;
+
+      // Only verified @srkrec.ac.in students can report found items with strictly defined public schema
+      // Requires exactly these 9 fields and rejects any unlisted fields:
+      // itemName, category, dateFound, foundLocation, foundDescription, identifyingMarks, status, createdAt, createdBy
+      allow create: if isVerifiedCollegeUser()
+        && request.resource.data.keys().hasAll([
+          'itemName', 'category', 'dateFound', 'foundLocation', 
+          'foundDescription', 'identifyingMarks', 'status', 'createdAt', 'createdBy'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'itemName', 'category', 'dateFound', 'foundLocation', 
+          'foundDescription', 'identifyingMarks', 'status', 'createdAt', 'createdBy'
+        ])
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.status == 'Active'
+        && request.resource.data.itemName is string 
+        && request.resource.data.itemName.size() >= 2 
+        && request.resource.data.itemName.size() <= 100
+        && request.resource.data.category is string
+        && request.resource.data.foundLocation is string
+        && request.resource.data.foundDescription is string
+        && request.resource.data.identifyingMarks is string
+        && request.resource.data.dateFound is string
+        && request.resource.data.createdAt is string;
+
+      // Found items do not have a client-side return or edit workflow in this app.
+      // Following the Principle of Least Privilege, client updates are disallowed.
+      allow update: if false;
+
+      // Disallow client deletions
+      allow delete: if false;
+
+      // Secure Subcollection: Private Finder Details
+      match /private_contact/{contactDoc} {
+        // STRICT PRIVACY POLICY: Deny client reads for all documents in this subcollection.
+        allow read: if false;
+
+        // Allow creation only when:
+        // 1. User is a verified @srkrec.ac.in college account.
+        // 2. Document ID is exactly "details".
+        // 3. Exactly these 4 fields are present and no extra fields exist:
+        //    finderName, finderEmail, createdBy, createdAt.
+        // 4. Finder document's createdBy equals signed-in user's UID.
+        // 5. Parent found report belongs to the signed-in user (verified via getAfter() across the atomic batch).
+        // 6. Types, lengths, and @srkrec.ac.in domain match the schema.
+        allow create: if contactDoc == 'details'
+          && isVerifiedCollegeUser()
+          && request.resource.data.keys().hasAll([
+            'finderName', 'finderEmail', 'createdBy', 'createdAt'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'finderName', 'finderEmail', 'createdBy', 'createdAt'
+          ])
+          && request.resource.data.createdBy == request.auth.uid
+          && getAfter(/databases/$(database)/documents/found_items/$(itemId)).data.createdBy == request.auth.uid
+          && request.resource.data.finderName is string
+          && request.resource.data.finderName.size() >= 2
+          && request.resource.data.finderEmail is string
+          && request.resource.data.finderEmail.matches('(?i)^[^@\\s]+@srkrec[.]ac[.]in$')
+          && request.resource.data.finderEmail.lower() == request.auth.token.email.lower()
+          && request.resource.data.createdAt is string;
+
+        // Disallow client updates and deletions
+        allow update, delete: if false;
+      }
+    }
+  }
+}
